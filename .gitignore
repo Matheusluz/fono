@@ -1,0 +1,25 @@
+# Rails
+/log/*
+/tmp/*
+/db/*.sqlite3
+/db/*.sqlite3-journal
+/public/packs
+/public/packs-test
+/node_modules
+/vendor/bundle
+.byebug_history
+
+# Next.js / Node
+/frontend/node_modules
+/frontend/.next
+/frontend/.turbo
+/frontend/out
+
+# Docker
+**/docker-compose.override.yml
+**/*.env
+**/tmp
+**/logs
+
+# Mac / Linux
+.DS_Store

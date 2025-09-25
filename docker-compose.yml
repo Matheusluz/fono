@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:15
+    container_name: fono_postgres
+    environment:
+      POSTGRES_USER: fono
+      POSTGRES_PASSWORD: fono123
+      POSTGRES_DB: fono_db
+    ports:
+      - "5433:5432"   # Porta do host -> Porta interna do container
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: fono_redis
+    ports:
+      - "6380:6379"   # opcional: se já tiver redis no host, evita conflito
+    volumes:
+      - redis_data:/data
+
+volumes:
+  db_data:
+  redis_data:
