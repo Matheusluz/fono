@@ -21,11 +21,27 @@ module Types
     # Add root-level fields here.
     # They will be entry points for queries on your schema.
 
-    # TODO: remove me
-    field :test_field, String, null: false,
-      description: "An example field added by the generator"
-    def test_field
-      "Hello World!"
+    # Todos pacientes (ignora deletados)
+    field :patients, [Types::PatientType], null: false
+
+    def patients
+      Patient.all
+    end
+
+    # Buscar paciente por ID
+    field :patient, Types::PatientType, null: true do
+      argument :id, ID, required: true
+    end
+
+    def patient(id:)
+      Patient.find_by(id: id)
+    end
+
+    # Todos pacientes incluindo deletados
+    field :patients_with_deleted, [Types::PatientType], null: false
+
+    def patients_with_deleted
+      Patient.with_deleted
     end
   end
 end
