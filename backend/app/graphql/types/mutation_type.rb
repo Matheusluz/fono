@@ -6,5 +6,6 @@ module Types
     field :update_patient, mutation: Mutations::UpdatePatient
     field :delete_patient, mutation: Mutations::DeletePatient
     field :restore_patient, mutation: Mutations::RestorePatient
+    field :register_user, mutation: Mutations::RegisterUser
   end
 end
