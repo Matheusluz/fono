@@ -43,5 +43,23 @@ module Types
     def patients_with_deleted
       Patient.with_deleted
     end
+
+    # Query para usuário atual (precisa estar autenticado)
+    field :current_user, Types::UserType, null: true
+
+    def current_user
+      context[:current_user]
+    end
+
+    # Todos usuários (precisa estar autenticado)
+    field :users, [Types::UserType], null: false
+
+    def users
+      unless context[:current_user]
+        raise GraphQL::ExecutionError, "Você precisa estar autenticado para ver usuários"
+      end
+      
+      User.all
+    end
   end
 end

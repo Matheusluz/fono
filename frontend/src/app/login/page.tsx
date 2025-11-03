@@ -2,15 +2,22 @@
 
 import FormInput from "@/src/components/FormInput"
 import { useState } from "react"
+import { useAuth } from "@/src/context/AuthContext"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const { login, loading, token } = useAuth()
+  const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Login:", { email, password })
-    // aqui você vai chamar a API do backend
+    setError(null)
+    try {
+      await login(email, password)
+    } catch (err: any) {
+      setError(err.message)
+    }
   }
 
   return (
@@ -34,11 +41,15 @@ export default function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
+        {error && (
+          <p className="text-red-600 text-sm mb-4" role="alert">{error}</p>
+        )}
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+          disabled={loading}
+          className="w-full bg-blue-600 disabled:opacity-50 text-white py-2 rounded-lg hover:bg-blue-700"
         >
-          Entrar
+          {loading ? 'Autenticando...' : 'Entrar'}
         </button>
       </form>
     </main>
