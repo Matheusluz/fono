@@ -1,3 +1,7 @@
+# frozen_string_literal: true
+
+# User model with JWT authentication via Devise.
+# Manages user accounts with email/password and JWT token revocation strategy.
 class User < ApplicationRecord
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable

@@ -1,3 +1,7 @@
+# frozen_string_literal: true
+
+# Patient model with soft delete support.
+# Represents patients in the system with basic information and email uniqueness.
 class Patient < ApplicationRecord
   acts_as_paranoid
 
