@@ -9,11 +9,7 @@ module Mutations
 
     def resolve(email:, password:, password_confirmation:)
       # Verificar se o usuário está autenticado
-      current_user = context[:current_user]
-      
-      unless current_user
-        raise GraphQL::ExecutionError, "Você precisa estar autenticado para criar usuários"
-      end
+      require_authentication!
 
       user = User.new(
         email: email,

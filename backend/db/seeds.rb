@@ -25,4 +25,4 @@ else
 end
 
 puts "   Credenciais: #{admin_email} / #{admin_password}"
-puts "   ⚠️  Lembre-se de alterar a senha padrão em produção!"
+puts '   ⚠️  Lembre-se de alterar a senha padrão em produção!'

@@ -1,17 +1,19 @@
 # frozen_string_literal: true
 
 module Types
+  # QueryType define todas as queries disponíveis na API GraphQL
+  # Inclui queries para buscar pacientes, usuários e informações do usuário atual
   class QueryType < Types::BaseObject
-    field :node, Types::NodeType, null: true, description: "Fetches an object given its ID." do
-      argument :id, ID, required: true, description: "ID of the object."
+    field :node, Types::NodeType, null: true, description: 'Fetches an object given its ID.' do
+      argument :id, ID, required: true, description: 'ID of the object.'
     end
 
     def node(id:)
       context.schema.object_from_id(id, context)
     end
 
-    field :nodes, [Types::NodeType, null: true], null: true, description: "Fetches a list of objects given a list of IDs." do
-      argument :ids, [ID], required: true, description: "IDs of the objects."
+    field :nodes, [Types::NodeType, null: true], null: true, description: 'Fetches a list of objects given a list of IDs.' do
+      argument :ids, [ID], required: true, description: 'IDs of the objects.'
     end
 
     def nodes(ids:)
@@ -25,6 +27,7 @@ module Types
     field :patients, [Types::PatientType], null: false
 
     def patients
+      require_authentication!
       Patient.all
     end
 
@@ -34,6 +37,7 @@ module Types
     end
 
     def patient(id:)
+      require_authentication!
       Patient.find_by(id: id)
     end
 
@@ -41,6 +45,7 @@ module Types
     field :patients_with_deleted, [Types::PatientType], null: false
 
     def patients_with_deleted
+      require_authentication!
       Patient.with_deleted
     end
 
@@ -55,10 +60,7 @@ module Types
     field :users, [Types::UserType], null: false
 
     def users
-      unless context[:current_user]
-        raise GraphQL::ExecutionError, "Você precisa estar autenticado para ver usuários"
-      end
-      
+      require_authentication!
       User.all
     end
   end
