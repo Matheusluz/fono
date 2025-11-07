@@ -18,13 +18,10 @@ module Mutations
       require_authentication!
 
       user = User.find_by(id: id)
-      
+
       unless user
         return { user: nil, errors: ["Usuário não encontrado"] }
       end
-
-      # Remove campos vazios
-      attributes.reject! { |_, v| v.nil? }
 
       if user.update(attributes)
         { user: user, errors: [] }

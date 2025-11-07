@@ -60,3 +60,72 @@ export const DELETE_USER_MUTATION = gql`
     }
   }
 `
+
+// ==================== PATIENTS ====================
+
+export const PATIENTS_QUERY = gql`
+  query Patients {
+    patients {
+      id
+      firstName
+      lastName
+      birthdate
+      email
+      phone
+    }
+  }
+`
+
+export const PATIENT_QUERY = gql`
+  query Patient($id: ID!) {
+    patient(id: $id) {
+      id
+      firstName
+      lastName
+      birthdate
+      email
+      phone
+    }
+  }
+`
+
+export const CREATE_PATIENT_MUTATION = gql`
+  mutation CreatePatient($firstName: String!, $lastName: String!, $birthdate: ISO8601Date, $email: String, $phone: String) {
+    createPatient(firstName: $firstName, lastName: $lastName, birthdate: $birthdate, email: $email, phone: $phone) {
+      patient {
+        id
+        firstName
+        lastName
+        birthdate
+        email
+        phone
+      }
+      errors
+    }
+  }
+`
+
+export const UPDATE_PATIENT_MUTATION = gql`
+  mutation UpdatePatient($id: ID!, $firstName: String, $lastName: String, $birthdate: ISO8601Date, $email: String, $phone: String) {
+    updatePatient(id: $id, firstName: $firstName, lastName: $lastName, birthdate: $birthdate, email: $email, phone: $phone) {
+      patient {
+        id
+        firstName
+        lastName
+        birthdate
+        email
+        phone
+      }
+      errors
+    }
+  }
+`
+
+export const DELETE_PATIENT_MUTATION = gql`
+  mutation DeletePatient($id: ID!) {
+    deletePatient(id: $id) {
+      success
+      errors
+    }
+  }
+`

@@ -14,16 +14,10 @@ module Mutations
       require_authentication!
 
       user = User.find_by(id: id)
-      
-      unless user
-        return { success: false, errors: ["Usuário não encontrado"] }
-      end
 
-      # Impedir que o usuário delete a si mesmo
-      if user.id == current_user.id
-        return { success: false, errors: ["Você não pode deletar sua própria conta"] }
-      end
+      return { success: false, errors: ['Usuário não encontrado'] } unless user
 
+      # A validação de self-deletion está no callback before_destroy do User
       if user.destroy
         { success: true, errors: [] }
       else

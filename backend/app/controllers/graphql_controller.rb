@@ -13,6 +13,10 @@ class GraphqlController < ApplicationController
     variables = prepare_variables(params[:variables])
     query = params[:query]
     operation_name = params[:operationName]
+
+    # Define o usuário atual no contexto global da thread
+    Current.user = current_user
+
     context = {
       current_user: current_user,
     }

@@ -11,6 +11,8 @@ module Mutations
     field :errors, [String], null: false
 
     def resolve(id:, **attributes)
+      require_authentication!
+
       patient = Patient.find_by(id: id)
       return { patient: nil, errors: ["Patient not found"] } unless patient
 

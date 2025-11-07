@@ -1,5 +1,44 @@
 # Autenticação no GraphQL
 
+## Current User Context
+
+O usuário autenticado está disponível globalmente através da classe `Current`:
+
+```ruby
+Current.user  # Retorna o usuário autenticado (ou nil)
+```
+
+### Como funciona:
+
+1. **GraphqlController** define `Current.user = current_user` no início de cada request
+2. **ActiveSupport::CurrentAttributes** garante que seja thread-safe e limpo automaticamente
+3. **Models e Services** podem acessar `Current.user` em qualquer lugar
+
+### Vantagens:
+- ✅ Não precisa passar `current_user` explicitamente
+- ✅ Thread-safe (cada request tem seu próprio contexto)
+- ✅ Limpeza automática após cada request
+- ✅ Funciona em callbacks, validations, services, etc
+
+### Exemplo de uso em Models:
+
+```ruby
+class User < ApplicationRecord
+  before_destroy :prevent_self_deletion
+
+  private
+
+  def prevent_self_deletion
+    if Current.user && id == Current.user.id
+      errors.add(:base, 'Você não pode deletar sua própria conta')
+      throw(:abort)
+    end
+  end
+end
+```
+
+---
+
 ## Métodos Disponíveis
 
 ### 1. Método Helper: `require_authentication!`

@@ -10,6 +10,8 @@ module Mutations
     field :errors, [String], null: false
 
     def resolve(first_name:, last_name:, birthdate: nil, email: nil, phone: nil)
+      require_authentication!
+
       patient = Patient.new(
         first_name: first_name,
         last_name: last_name,
