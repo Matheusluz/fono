@@ -129,3 +129,84 @@ export const DELETE_PATIENT_MUTATION = gql`
     }
   }
 `
+
+// ==================== PROFESSIONALS ====================
+
+export const PROFESSIONALS_QUERY = gql`
+  query Professionals($includeInactive: Boolean) {
+    professionals(includeInactive: $includeInactive) {
+      id
+      userId
+      email
+      fullName
+      specialty
+      councilRegistration
+      bio
+      active
+      createdAt
+    }
+  }
+`
+
+export const PROFESSIONAL_QUERY = gql`
+  query Professional($id: ID!) {
+    professional(id: $id) {
+      id
+      userId
+      email
+      fullName
+      specialty
+      councilRegistration
+      bio
+      active
+      user {
+        id
+        email
+        role
+      }
+    }
+  }
+`
+
+export const CREATE_PROFESSIONAL_MUTATION = gql`
+  mutation CreateProfessional($userId: ID!, $specialty: String!, $councilRegistration: String, $bio: String) {
+    createProfessional(userId: $userId, specialty: $specialty, councilRegistration: $councilRegistration, bio: $bio) {
+      professional {
+        id
+        userId
+        email
+        specialty
+        councilRegistration
+        bio
+        active
+      }
+      errors
+    }
+  }
+`
+
+export const UPDATE_PROFESSIONAL_MUTATION = gql`
+  mutation UpdateProfessional($id: ID!, $specialty: String, $councilRegistration: String, $bio: String, $active: Boolean) {
+    updateProfessional(id: $id, specialty: $specialty, councilRegistration: $councilRegistration, bio: $bio, active: $active) {
+      professional {
+        id
+        userId
+        email
+        specialty
+        councilRegistration
+        bio
+        active
+      }
+      errors
+    }
+  }
+`
+
+export const DELETE_PROFESSIONAL_MUTATION = gql`
+  mutation DeleteProfessional($id: ID!) {
+    deleteProfessional(id: $id) {
+      success
+      errors
+    }
+  }
+`

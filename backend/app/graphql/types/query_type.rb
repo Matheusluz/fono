@@ -63,5 +63,35 @@ module Types
       require_authentication!
       User.all
     end
+    
+    # Todos profissionais ativos
+    field :professionals, [Types::ProfessionalType], null: false do
+      argument :include_inactive, Boolean, required: false, default_value: false
+    end
+    
+    def professionals(include_inactive: false)
+      require_authentication!
+      include_inactive ? Professional.all : Professional.active
+    end
+    
+    # Buscar profissional por ID
+    field :professional, Types::ProfessionalType, null: true do
+      argument :id, ID, required: true
+    end
+    
+    def professional(id:)
+      require_authentication!
+      Professional.find_by(id: id)
+    end
+    
+    # Buscar profissionais por especialidade
+    field :professionals_by_specialty, [Types::ProfessionalType], null: false do
+      argument :specialty, String, required: true
+    end
+    
+    def professionals_by_specialty(specialty:)
+      require_authentication!
+      Professional.active.by_specialty(specialty)
+    end
   end
 end

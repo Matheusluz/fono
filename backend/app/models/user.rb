@@ -11,15 +11,25 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable,
          :jwt_authenticatable, jwt_revocation_strategy: JwtDenylist
 
+  # Associações
+  has_one :professional, dependent: :destroy
+  
+  # Enumeração de roles
+  enum role: {
+    admin: 0,
+    professional: 1,
+    assistant: 2
+  }
+
   # Para permitir que apenas email e password sejam passados na criação
   attr_accessor :skip_password_validation
 
   # Validação antes de deletar: impedir que usuário delete a si mesmo
   before_destroy :prevent_self_deletion
 
-  # Helper method para verificar se é admin
+  # Helper method para verificar se é admin (já existe via enum, mas mantém compatibilidade)
   def admin?
-    admin
+    super || admin # enum gera método admin? automaticamente
   end
 
   # Gera um token JWT para o usuário

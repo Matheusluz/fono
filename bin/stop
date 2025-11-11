@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+set -e
+
+# Script para parar todos os serviços de desenvolvimento
+
+# Cores
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+log_info() {
+  echo -e "${BLUE}ℹ ${NC} $1"
+}
+
+log_success() {
+  echo -e "${GREEN}✓${NC} $1"
+}
+
+log_warn() {
+  echo -e "${YELLOW}⚠${NC} $1"
+}
+
+echo -e "${YELLOW}"
+cat << "EOF"
+╔═══════════════════════════════════════════╗
+║   🛑 Encerrando Serviços                 ║
+╚═══════════════════════════════════════════╝
+EOF
+echo -e "${NC}"
+
+# Detectar docker compose (v2 - novo) ou docker-compose (v1 - antigo)
+if docker compose version &> /dev/null 2>&1; then
+  DOCKER_COMPOSE="docker compose"
+elif command -v docker-compose &> /dev/null && docker-compose version &> /dev/null 2>&1; then
+  DOCKER_COMPOSE="docker-compose"
+else
+  log_warn "Docker Compose não encontrado. Pulando parada de containers."
+  DOCKER_COMPOSE=""
+fi
+
+# Parar processos Rails e Node.js
+log_info "Parando Backend Rails..."
+pkill -f "rails server" 2>/dev/null && log_success "Backend encerrado" || log_warn "Backend não estava rodando"
+
+log_info "Parando Frontend Next.js..."
+pkill -f "next dev" 2>/dev/null && log_success "Frontend encerrado" || log_warn "Frontend não estava rodando"
+
+# Parar containers Docker
+if [ -n "$DOCKER_COMPOSE" ]; then
+  log_info "Parando containers Docker..."
+  $DOCKER_COMPOSE down
+else
+  log_warn "Docker Compose não disponível. Containers não foram parados."
+fi
+
+log_success "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+log_success "  Todos os serviços foram encerrados"
+log_success "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"

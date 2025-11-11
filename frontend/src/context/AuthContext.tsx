@@ -48,15 +48,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const storedToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null
     if (storedToken) {
+      // Verificar se token está expirado (JWT format: header.payload.signature)
+      try {
+        const payload = JSON.parse(atob(storedToken.split('.')[1]))
+        const exp = payload.exp * 1000 // converter para milliseconds
+        
+        // Se token expirado, limpar
+        if (Date.now() >= exp) {
+          console.log('Token expirado detectado. Limpando...')
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
+          setLoading(false)
+          return
+        }
+      } catch (e) {
+        // Token inválido, limpar
+        console.error('Token inválido:', e)
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        setLoading(false)
+        return
+      }
+      
       setToken(storedToken)
       // Fetch current user
       apollo.query({ query: CURRENT_USER_QUERY, fetchPolicy: 'network-only' })
         .then(res => {
           setUser(res.data.currentUser)
         })
-        .catch(() => {
+        .catch((error) => {
           // invalid token
+          console.error('Erro ao buscar usuário atual:', error)
           localStorage.removeItem('token')
+          localStorage.removeItem('user')
           setToken(null)
         })
         .finally(() => setLoading(false))
@@ -67,22 +91,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     setLoading(true)
-    const result = await apollo.mutate({
-      mutation: LOGIN_USER_MUTATION,
-      variables: { email, password }
-    })
-    const payload = result.data?.loginUser
-    if (payload?.token && payload.user && payload.errors.length === 0) {
-      localStorage.setItem('token', payload.token)
-      // Set cookie for middleware (simple non-secure cookie for dev)
-      document.cookie = `token=${payload.token}; path=/;`
-      setToken(payload.token)
-      setUser(payload.user)
-      router.replace('/home')
-    } else {
-      throw new Error(payload?.errors?.join(', ') || 'Falha no login')
+    try {
+      const result = await apollo.mutate({
+        mutation: LOGIN_USER_MUTATION,
+        variables: { email, password }
+      })
+      const payload = result.data?.loginUser
+      if (payload?.token && payload.user && payload.errors.length === 0) {
+        localStorage.setItem('token', payload.token)
+        // Set cookie for middleware (simple non-secure cookie for dev)
+        document.cookie = `token=${payload.token}; path=/;`
+        setToken(payload.token)
+        setUser(payload.user)
+        router.replace('/home')
+      } else {
+        throw new Error(payload?.errors?.join(', ') || 'Falha no login')
+      }
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }, [apollo, router])
 
   const logout = useCallback(() => {

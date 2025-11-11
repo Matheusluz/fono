@@ -12,8 +12,9 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: 'Dashboard', href: '/home', icon: '📊' },
-  { label: 'Pacientes', href: '/patients', icon: '👥' },
   { label: 'Usuários', href: '/users', icon: '👤' },
+  { label: 'Pacientes', href: '/patients', icon: '👥' },
+  { label: 'Profissionais', href: '/professionals', icon: '👨‍⚕️' },
   { label: 'Relatórios', href: '/reports', icon: '📈' },
   { label: 'Configurações', href: '/settings', icon: '⚙️' },
 ]
