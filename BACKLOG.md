@@ -61,6 +61,8 @@ Este arquivo consolida funcionalidades existentes, pendências e roadmap evoluti
 - [ ] Métricas de produtividade (atendimentos realizados / cancelamentos)
 - [ ] Comissão sobre atendimentos (regra % por categoria)
 - [ ] Criar opção para reativar o profissional
+- [ ] Aplicar filtros nas grids
+- [ ] Ajustar para continuar aparecendo o menu lateral na tela de profissionais
 - [ ] Perfil público resumido (especialidades) opcional
 
 ### 5. 📊 Relatórios & Métricas

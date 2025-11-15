@@ -1,36 +1,14 @@
 "use client"
 
-import { useEffect } from 'react'
 import { useAuth } from '@/src/context/AuthContext'
-import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/src/components/DashboardLayout'
+import ProtectedRoute from '@/src/components/ProtectedRoute'
 
 export default function HomePage() {
-  const { user, loading, token } = useAuth()
-  const router = useRouter()
-
-  useEffect(() => {
-    if (!loading && !token) {
-      router.replace('/')
-    }
-  }, [loading, token, router])
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return null // redirecionando
-  }
+  const { user } = useAuth()
 
   return (
+    <ProtectedRoute>
     <DashboardLayout>
       {/* Header */}
       <div className="mb-8">
@@ -117,20 +95,20 @@ export default function HomePage() {
           <div className="p-6 space-y-4">
             <div>
               <p className="text-sm text-gray-600">Email</p>
-              <p className="font-medium text-gray-900 truncate">{user.email}</p>
+              <p className="font-medium text-gray-900 truncate">{user?.email}</p>
             </div>
             <div>
               <p className="text-sm text-gray-600">ID do Usuário</p>
-              <p className="font-medium text-gray-900">{user.id}</p>
+              <p className="font-medium text-gray-900">{user?.id}</p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Tipo de Conta</p>
               <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                user.admin 
+                user?.admin
                   ? 'bg-blue-100 text-blue-800' 
                   : 'bg-gray-100 text-gray-800'
               }`}>
-                {user.admin ? 'Administrador' : 'Usuário Padrão'}
+                {user?.admin ? 'Administrador' : 'Usuário Padrão'}
               </span>
             </div>
           </div>
@@ -167,5 +145,6 @@ export default function HomePage() {
         </div>
       </div>
     </DashboardLayout>
+    </ProtectedRoute>
   )
 }

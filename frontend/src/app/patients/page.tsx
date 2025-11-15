@@ -1,11 +1,17 @@
 "use client"
-import { useEffect, useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useAuth } from '@/src/context/AuthContext'
-import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/src/components/DashboardLayout'
+import ProtectedRoute from '@/src/components/ProtectedRoute'
 import { useQuery, useMutation } from '@apollo/client'
 import { PATIENTS_QUERY, CREATE_PATIENT_MUTATION, UPDATE_PATIENT_MUTATION, DELETE_PATIENT_MUTATION } from '@/src/lib/graphql'
 import FormInput from '@/src/components/FormInput'
+import PageHeader from '@/src/components/PageHeader'
+import Table from '@/src/components/Table'
+import Modal from '@/src/components/Modal'
+import ConfirmDialog from '@/src/components/ConfirmDialog'
+import Avatar from '@/src/components/Avatar'
+import StatusBadge from '@/src/components/StatusBadge'
 
 interface Patient {
   id: string
@@ -17,8 +23,7 @@ interface Patient {
 }
 
 export default function PatientsPage() {
-  const { user: currentUser, loading: authLoading, token } = useAuth()
-  const router = useRouter()
+  const { token } = useAuth()
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -31,6 +36,11 @@ export default function PatientsPage() {
     phone: ''
   })
   const [formError, setFormError] = useState<string | null>(null)
+  
+  // Filter and pagination state
+  const [filterValue, setFilterValue] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
 
   const { data, loading, error, refetch } = useQuery(PATIENTS_QUERY, {
     skip: !token
@@ -81,16 +91,49 @@ export default function PatientsPage() {
       setFormError(err.message)
     }
   })
-
-  useEffect(() => {
-    if (!authLoading && !token) {
-      router.replace('/')
-    }
-  }, [authLoading, token, router])
-
   const resetForm = () => {
     setFormData({ firstName: '', lastName: '', birthdate: '', email: '', phone: '' })
     setFormError(null)
+  }
+
+  // Filter and paginate data
+  const { filteredData, paginatedData, totalPages } = useMemo(() => {
+    const patients = data?.patients || []
+    
+    // Apply filter
+    const filtered = patients.filter((patient: Patient) => {
+      const fullName = `${patient.firstName} ${patient.lastName}`.toLowerCase()
+      const search = filterValue.toLowerCase()
+      return (
+        fullName.includes(search) ||
+        patient.id.toString().includes(search) ||
+        patient.email?.toLowerCase().includes(search) ||
+        patient.phone?.includes(search)
+      )
+    })
+    
+    // Calculate pagination
+    const total = Math.ceil(filtered.length / itemsPerPage)
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const paginated = filtered.slice(startIndex, startIndex + itemsPerPage)
+    
+    return {
+      filteredData: filtered,
+      paginatedData: paginated,
+      totalPages: total
+    }
+  }, [data?.patients, filterValue, currentPage, itemsPerPage])
+
+  // Reset to first page when filter changes
+  const handleFilterChange = (value: string) => {
+    setFilterValue(value)
+    setCurrentPage(1)
+  }
+
+  // Reset to first page when items per page changes
+  const handleItemsPerPageChange = (items: number) => {
+    setItemsPerPage(items)
+    setCurrentPage(1)
   }
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
@@ -171,143 +214,93 @@ export default function PatientsPage() {
     }
     return `${age} anos`
   }
-
-  if (authLoading || !currentUser) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
+    <ProtectedRoute>
     <DashboardLayout>
-      {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestão de Pacientes</h1>
-          <p className="text-gray-600">Gerencie os pacientes cadastrados no sistema</p>
-        </div>
-        <button
-          onClick={() => {
-            resetForm()
-            setShowCreateModal(true)
-          }}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <span className="text-xl">➕</span>
-          <span>Novo Paciente</span>
-        </button>
-      </div>
+      <PageHeader
+        title="Gestão de Pacientes"
+        subtitle="Gerencie os pacientes cadastrados no sistema"
+        actionLabel="Novo Paciente"
+        onAction={() => {
+          resetForm()
+          setShowCreateModal(true)
+        }}
+        actionIcon="➕"
+      />
 
-      {/* Patients Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Nome Completo
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Data Nascimento
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Idade
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Telefone
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ações
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {loading ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                    <div className="flex justify-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    </div>
-                  </td>
-                </tr>
-              ) : error ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-red-600">
-                    Erro ao carregar pacientes: {error.message}
-                  </td>
-                </tr>
-              ) : data?.patients?.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
-                    Nenhum paciente encontrado
-                  </td>
-                </tr>
-              ) : (
-                data?.patients?.map((patient: Patient) => (
-                  <tr key={patient.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      #{patient.id}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 bg-green-100 rounded-full flex items-center justify-center">
-                          <span className="text-green-600 font-medium">
-                            {patient.firstName.charAt(0)}{patient.lastName.charAt(0)}
-                          </span>
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {patient.firstName} {patient.lastName}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(patient.birthdate)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {calculateAge(patient.birthdate)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {patient.email || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {patient.phone || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => openEditModal(patient)}
-                        className="text-blue-600 hover:text-blue-900 mr-4"
-                        title="Editar"
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        onClick={() => openDeleteModal(patient)}
-                        className="text-red-600 hover:text-red-900"
-                        title="Deletar"
-                      >
-                        🗑️
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {/** Tabela com filtro e paginação */}
+      <Table
+        columns={[
+          { key: 'id', label: 'ID' },
+          { key: 'name', label: 'Nome Completo' },
+          { key: 'birthdate', label: 'Data Nascimento' },
+          { key: 'age', label: 'Idade' },
+          { key: 'email', label: 'Email' },
+          { key: 'phone', label: 'Telefone' },
+          { key: 'actions', label: 'Ações', className: 'text-right' }
+        ]}
+        data={paginatedData}
+        loading={loading}
+        error={error ? `Erro ao carregar pacientes: ${error.message}` : null}
+        emptyMessage={filterValue ? 'Nenhum paciente encontrado com esse filtro' : 'Nenhum paciente encontrado'}
+        showFilter
+        filterValue={filterValue}
+        onFilterChange={handleFilterChange}
+        filterPlaceholder="Buscar por nome, email, telefone ou ID..."
+        showPagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={filteredData.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+        onItemsPerPageChange={handleItemsPerPageChange}
+        renderRow={(patient: Patient) => (
+          <tr key={patient.id} className="hover:bg-gray-50">
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">#{patient.id}</td>
+            <td className="px-6 py-4 whitespace-nowrap">
+              <div className="flex items-center">
+                <Avatar
+                  initials={`${patient.firstName.charAt(0)}${patient.lastName.charAt(0)}`}
+                  variant="green"
+                />
+                <div className="ml-4">
+                  <div className="text-sm font-medium text-gray-900">
+                    {patient.firstName} {patient.lastName}
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {formatDate(patient.birthdate)}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {calculateAge(patient.birthdate)}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {patient.email || '-'}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {patient.phone || '-'}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <button
+                onClick={() => openEditModal(patient)}
+                className="text-blue-600 hover:text-blue-900 mr-4"
+                title="Editar"
+              >
+                ✏️
+              </button>
+              <button
+                onClick={() => openDeleteModal(patient)}
+                className="text-red-600 hover:text-red-900"
+                title="Deletar"
+              >
+                🗑️
+              </button>
+            </td>
+          </tr>
+        )}
+      />
 
       {/* Modal for Creating Patient */}
       {showCreateModal && (
@@ -511,11 +504,15 @@ export default function PatientsPage() {
                 Tem certeza que deseja deletar o paciente:
               </p>
               <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="font-semibold text-gray-900">
-                  {selectedPatient.firstName} {selectedPatient.lastName}
-                </p>
-                {selectedPatient.email && (
-                  <p className="text-sm text-gray-600 mt-1">{selectedPatient.email}</p>
+                {selectedPatient && (
+                  <>
+                    <p className="font-semibold text-gray-900">
+                      {selectedPatient.firstName} {selectedPatient.lastName}
+                    </p>
+                    {selectedPatient.email && (
+                      <p className="text-sm text-gray-600 mt-1">{selectedPatient.email}</p>
+                    )}
+                  </>
                 )}
               </div>
               <p className="text-red-600 text-sm mt-4">
@@ -566,5 +563,6 @@ export default function PatientsPage() {
         </div>
       </div>
     </DashboardLayout>
+    </ProtectedRoute>
   )
 }

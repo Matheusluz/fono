@@ -1,15 +1,18 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
+import { useAuth } from '@/src/context/AuthContext'
+import DashboardLayout from '@/src/components/DashboardLayout'
+import ProtectedRoute from '@/src/components/ProtectedRoute'
 import { useQuery, useMutation } from '@apollo/client'
-import { 
-  PROFESSIONALS_QUERY, 
-  CREATE_PROFESSIONAL_MUTATION, 
-  UPDATE_PROFESSIONAL_MUTATION, 
-  DELETE_PROFESSIONAL_MUTATION,
-  USERS_QUERY
-} from '@/src/lib/graphql'
-import { useRouter } from 'next/navigation'
+import { PROFESSIONALS_QUERY, CREATE_PROFESSIONAL_MUTATION, UPDATE_PROFESSIONAL_MUTATION, DELETE_PROFESSIONAL_MUTATION,USERS_QUERY } from '@/src/lib/graphql'
+import FormInput from '@/src/components/FormInput'
+import PageHeader from '@/src/components/PageHeader'
+import Table from '@/src/components/Table'
+import Modal from '@/src/components/Modal'
+import ConfirmDialog from '@/src/components/ConfirmDialog'
+import Avatar from '@/src/components/Avatar'
+import StatusBadge from '@/src/components/StatusBadge'
 
 interface Professional {
   id: string
@@ -38,7 +41,7 @@ const SPECIALTIES = [
 ]
 
 export default function ProfessionalsPage() {
-  const router = useRouter()
+  const { token } = useAuth()
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -49,13 +52,19 @@ export default function ProfessionalsPage() {
     councilRegistration: '',
     bio: ''
   })
+  
+  // Filter and pagination state
+  const [filterValue, setFilterValue] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
 
   // Queries
   const { data, loading, error, refetch } = useQuery(PROFESSIONALS_QUERY, {
-    variables: { includeInactive: false }
+    variables: { includeInactive: false },
+    skip: !token
   })
   
-  const { data: usersData } = useQuery(USERS_QUERY)
+  const { data: usersData } = useQuery(USERS_QUERY, { skip: !token })
 
   // Mutations
   const [createProfessional] = useMutation(CREATE_PROFESSIONAL_MUTATION, {
@@ -87,6 +96,46 @@ export default function ProfessionalsPage() {
   const resetForm = () => {
     setFormData({ userId: '', specialty: '', councilRegistration: '', bio: '' })
     setSelectedProfessional(null)
+  }
+
+  // Filter and paginate data
+  const { filteredData, paginatedData, totalPages } = useMemo(() => {
+    const professionals = data?.professionals || []
+    
+    // Apply filter
+    const filtered = professionals.filter((professional: Professional) => {
+      const search = filterValue.toLowerCase()
+      return (
+        professional.fullName.toLowerCase().includes(search) ||
+        professional.email.toLowerCase().includes(search) ||
+        professional.specialty.toLowerCase().includes(search) ||
+        professional.id.toString().includes(search) ||
+        professional.councilRegistration?.toLowerCase().includes(search)
+      )
+    })
+    
+    // Calculate pagination
+    const total = Math.ceil(filtered.length / itemsPerPage)
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const paginated = filtered.slice(startIndex, startIndex + itemsPerPage)
+    
+    return {
+      filteredData: filtered,
+      paginatedData: paginated,
+      totalPages: total
+    }
+  }, [data?.professionals, filterValue, currentPage, itemsPerPage])
+
+  // Reset to first page when filter changes
+  const handleFilterChange = (value: string) => {
+    setFilterValue(value)
+    setCurrentPage(1)
+  }
+
+  // Reset to first page when items per page changes
+  const handleItemsPerPageChange = (items: number) => {
+    setItemsPerPage(items)
+    setCurrentPage(1)
   }
 
   const handleCreate = () => {
@@ -149,95 +198,79 @@ export default function ProfessionalsPage() {
   if (error) return <div className="p-8 text-red-600">Erro: {error.message}</div>
 
   const professionals: Professional[] = data?.professionals || []
-
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Profissionais</h1>
-          <button
-            onClick={handleCreate}
-            className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
-          >
-            + Adicionar Profissional
-          </button>
-        </div>
+    <ProtectedRoute>
+    <DashboardLayout>
+      <PageHeader
+        title="Profissionais"
+        subtitle="Gerencie os profissionais cadastrados"
+        actionLabel="Adicionar Profissional"
+        actionIcon="+"
+        onAction={handleCreate}
+      />
 
-        {/* Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Profissional</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Especialidade</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registro</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {professionals.map((professional) => (
-                <tr key={professional.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">#{professional.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="h-10 w-10 flex-shrink-0">
-                        <div className="h-10 w-10 rounded-full bg-purple-600 flex items-center justify-center text-white font-semibold">
-                          {professional.email.substring(0, 2).toUpperCase()}
-                        </div>
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{professional.fullName}</div>
-                        <div className="text-sm text-gray-500">{professional.email}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                      {professional.specialty}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {professional.councilRegistration || '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      professional.active 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {professional.active ? 'Ativo' : 'Inativo'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => handleEdit(professional)}
-                      className="text-indigo-600 hover:text-indigo-900 mr-4"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => handleDelete(professional)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Desativar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {/* Footer */}
-          <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
-            <div className="text-sm text-gray-700">
-              Total: <span className="font-semibold">{professionals.length}</span> profissionais ativos
-            </div>
-          </div>
-        </div>
-      </div>
+      <Table
+        columns={[
+          { key: 'id', label: 'ID' },
+          { key: 'professional', label: 'Profissional' },
+          { key: 'specialty', label: 'Especialidade' },
+          { key: 'registration', label: 'Registro' },
+          { key: 'status', label: 'Status' },
+          { key: 'actions', label: 'Ações', className: 'text-right' }
+        ]}
+        data={paginatedData}
+        loading={loading}
+        error={error ? `Erro ao carregar profissionais: ${(error as any).message}` : null}
+        emptyMessage={filterValue ? 'Nenhum profissional encontrado com esse filtro' : 'Nenhum profissional encontrado'}
+        showFilter
+        filterValue={filterValue}
+        onFilterChange={handleFilterChange}
+        filterPlaceholder="Buscar por nome, email, especialidade ou registro..."
+        showPagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={filteredData.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+        onItemsPerPageChange={handleItemsPerPageChange}
+        renderRow={(professional: Professional) => (
+          <tr key={professional.id} className="hover:bg-gray-50">
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">#{professional.id}</td>
+            <td className="px-6 py-4 whitespace-nowrap">
+              <div className="flex items-center">
+                <Avatar initials={professional.email.substring(0,2)} variant="purple" />
+                <div className="ml-4">
+                  <div className="text-sm font-medium text-gray-900">{professional.fullName}</div>
+                  <div className="text-sm text-gray-500">{professional.email}</div>
+                </div>
+              </div>
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap">
+              <StatusBadge label={professional.specialty} variant="purple" />
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {professional.councilRegistration || '-'}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap">
+              <StatusBadge label={professional.active ? 'Ativo' : 'Inativo'} variant={professional.active ? 'success' : 'neutral'} />
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <button
+                onClick={() => handleEdit(professional)}
+                className="text-indigo-600 hover:text-indigo-900 mr-4"
+              >
+                Editar
+              </button>
+              <button
+                onClick={() => handleDelete(professional)}
+                className="text-red-600 hover:text-red-900"
+              >
+                Desativar
+              </button>
+            </td>
+          </tr>
+        )}
+      />
 
       {/* Create Modal */}
       {showCreateModal && (
@@ -424,6 +457,7 @@ export default function ProfessionalsPage() {
           </div>
         </div>
       )}
-    </div>
+    </DashboardLayout>
+    </ProtectedRoute>
   )
 }
