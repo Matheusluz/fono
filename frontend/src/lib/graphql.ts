@@ -139,7 +139,12 @@ export const PROFESSIONALS_QUERY = gql`
       userId
       email
       fullName
-      specialty
+      specialtyId
+      specialtyName
+      specialty {
+        id
+        name
+      }
       councilRegistration
       bio
       active
@@ -155,7 +160,12 @@ export const PROFESSIONAL_QUERY = gql`
       userId
       email
       fullName
-      specialty
+      specialtyId
+      specialtyName
+      specialty {
+        id
+        name
+      }
       councilRegistration
       bio
       active
@@ -169,13 +179,14 @@ export const PROFESSIONAL_QUERY = gql`
 `
 
 export const CREATE_PROFESSIONAL_MUTATION = gql`
-  mutation CreateProfessional($userId: ID!, $specialty: String!, $councilRegistration: String, $bio: String) {
-    createProfessional(userId: $userId, specialty: $specialty, councilRegistration: $councilRegistration, bio: $bio) {
+  mutation CreateProfessional($userId: ID!, $specialtyId: ID!, $councilRegistration: String, $bio: String) {
+    createProfessional(userId: $userId, specialtyId: $specialtyId, councilRegistration: $councilRegistration, bio: $bio) {
       professional {
         id
         userId
         email
-        specialty
+        specialtyId
+        specialtyName
         councilRegistration
         bio
         active
@@ -186,13 +197,14 @@ export const CREATE_PROFESSIONAL_MUTATION = gql`
 `
 
 export const UPDATE_PROFESSIONAL_MUTATION = gql`
-  mutation UpdateProfessional($id: ID!, $specialty: String, $councilRegistration: String, $bio: String, $active: Boolean) {
-    updateProfessional(id: $id, specialty: $specialty, councilRegistration: $councilRegistration, bio: $bio, active: $active) {
+  mutation UpdateProfessional($id: ID!, $specialtyId: ID, $councilRegistration: String, $bio: String, $active: Boolean) {
+    updateProfessional(id: $id, specialtyId: $specialtyId, councilRegistration: $councilRegistration, bio: $bio, active: $active) {
       professional {
         id
         userId
         email
-        specialty
+        specialtyId
+        specialtyName
         councilRegistration
         bio
         active
@@ -205,6 +217,71 @@ export const UPDATE_PROFESSIONAL_MUTATION = gql`
 export const DELETE_PROFESSIONAL_MUTATION = gql`
   mutation DeleteProfessional($id: ID!) {
     deleteProfessional(id: $id) {
+      success
+      errors
+    }
+  }
+`
+
+// ==================== SPECIALTIES ====================
+
+export const SPECIALTIES_QUERY = gql`
+  query Specialties($includeInactive: Boolean) {
+    specialties(includeInactive: $includeInactive) {
+      id
+      name
+      description
+      active
+      professionalsCount
+      createdAt
+      updatedAt
+    }
+  }
+`
+
+export const SPECIALTY_QUERY = gql`
+  query Specialty($id: ID!) {
+    specialty(id: $id) {
+      id
+      name
+      description
+      active
+      professionalsCount
+    }
+  }
+`
+
+export const CREATE_SPECIALTY_MUTATION = gql`
+  mutation CreateSpecialty($name: String!, $description: String) {
+    createSpecialty(name: $name, description: $description) {
+      specialty {
+        id
+        name
+        description
+        active
+      }
+      errors
+    }
+  }
+`
+
+export const UPDATE_SPECIALTY_MUTATION = gql`
+  mutation UpdateSpecialty($id: ID!, $name: String, $description: String, $active: Boolean) {
+    updateSpecialty(id: $id, name: $name, description: $description, active: $active) {
+      specialty {
+        id
+        name
+        description
+        active
+      }
+      errors
+    }
+  }
+`
+
+export const DELETE_SPECIALTY_MUTATION = gql`
+  mutation DeleteSpecialty($id: ID!) {
+    deleteSpecialty(id: $id) {
       success
       errors
     }

@@ -5,7 +5,14 @@ import { useAuth } from '@/src/context/AuthContext'
 import DashboardLayout from '@/src/components/DashboardLayout'
 import ProtectedRoute from '@/src/components/ProtectedRoute'
 import { useQuery, useMutation } from '@apollo/client'
-import { PROFESSIONALS_QUERY, CREATE_PROFESSIONAL_MUTATION, UPDATE_PROFESSIONAL_MUTATION, DELETE_PROFESSIONAL_MUTATION,USERS_QUERY } from '@/src/lib/graphql'
+import { 
+  PROFESSIONALS_QUERY, 
+  CREATE_PROFESSIONAL_MUTATION, 
+  UPDATE_PROFESSIONAL_MUTATION, 
+  DELETE_PROFESSIONAL_MUTATION,
+  USERS_QUERY,
+  SPECIALTIES_QUERY 
+} from '@/src/lib/graphql'
 import FormInput from '@/src/components/FormInput'
 import PageHeader from '@/src/components/PageHeader'
 import Table from '@/src/components/Table'
@@ -19,7 +26,12 @@ interface Professional {
   userId: string
   email: string
   fullName: string
-  specialty: string
+  specialtyId: string
+  specialtyName: string
+  specialty: {
+    id: string
+    name: string
+  }
   councilRegistration: string | null
   bio: string | null
   active: boolean
@@ -31,14 +43,11 @@ interface User {
   role: string
 }
 
-const SPECIALTIES = [
-  'Fonoaudiologia',
-  'Psicologia',
-  'Psicopedagogia',
-  'Terapia Ocupacional',
-  'Nutrição',
-  'Fisioterapia'
-]
+interface Specialty {
+  id: string
+  name: string
+  active: boolean
+}
 
 export default function ProfessionalsPage() {
   const { token } = useAuth()
@@ -48,7 +57,7 @@ export default function ProfessionalsPage() {
   const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null)
   const [formData, setFormData] = useState({
     userId: '',
-    specialty: '',
+    specialtyId: '',
     councilRegistration: '',
     bio: ''
   })
@@ -65,6 +74,10 @@ export default function ProfessionalsPage() {
   })
   
   const { data: usersData } = useQuery(USERS_QUERY, { skip: !token })
+  const { data: specialtiesData } = useQuery(SPECIALTIES_QUERY, { 
+    variables: { includeInactive: false },
+    skip: !token 
+  })
 
   // Mutations
   const [createProfessional] = useMutation(CREATE_PROFESSIONAL_MUTATION, {
@@ -94,7 +107,7 @@ export default function ProfessionalsPage() {
   })
 
   const resetForm = () => {
-    setFormData({ userId: '', specialty: '', councilRegistration: '', bio: '' })
+    setFormData({ userId: '', specialtyId: '', councilRegistration: '', bio: '' })
     setSelectedProfessional(null)
   }
 
@@ -108,7 +121,7 @@ export default function ProfessionalsPage() {
       return (
         professional.fullName.toLowerCase().includes(search) ||
         professional.email.toLowerCase().includes(search) ||
-        professional.specialty.toLowerCase().includes(search) ||
+        professional.specialtyName.toLowerCase().includes(search) ||
         professional.id.toString().includes(search) ||
         professional.councilRegistration?.toLowerCase().includes(search)
       )
@@ -147,7 +160,7 @@ export default function ProfessionalsPage() {
     setSelectedProfessional(professional)
     setFormData({
       userId: professional.userId,
-      specialty: professional.specialty,
+      specialtyId: professional.specialtyId,
       councilRegistration: professional.councilRegistration || '',
       bio: professional.bio || ''
     })
@@ -163,7 +176,7 @@ export default function ProfessionalsPage() {
     createProfessional({
       variables: {
         userId: formData.userId,
-        specialty: formData.specialty,
+        specialtyId: formData.specialtyId,
         councilRegistration: formData.councilRegistration || null,
         bio: formData.bio || null
       }
@@ -175,7 +188,7 @@ export default function ProfessionalsPage() {
     updateProfessional({
       variables: {
         id: selectedProfessional.id,
-        specialty: formData.specialty,
+        specialtyId: formData.specialtyId,
         councilRegistration: formData.councilRegistration || null,
         bio: formData.bio || null
       }
@@ -246,7 +259,7 @@ export default function ProfessionalsPage() {
               </div>
             </td>
             <td className="px-6 py-4 whitespace-nowrap">
-              <StatusBadge label={professional.specialty} variant="purple" />
+              <StatusBadge label={professional.specialtyName} variant="purple" />
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
               {professional.councilRegistration || '-'}
@@ -303,14 +316,14 @@ export default function ProfessionalsPage() {
                   Especialidade <span className="text-red-500">*</span>
                 </label>
                 <select
-                  value={formData.specialty}
-                  onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
+                  value={formData.specialtyId}
+                  onChange={(e) => setFormData({ ...formData, specialtyId: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   required
                 >
                   <option value="">Selecione uma especialidade</option>
-                  {SPECIALTIES.map((specialty) => (
-                    <option key={specialty} value={specialty}>{specialty}</option>
+                  {(specialtiesData?.specialties || []).map((specialty: Specialty) => (
+                    <option key={specialty.id} value={specialty.id}>{specialty.name}</option>
                   ))}
                 </select>
               </div>
@@ -347,7 +360,7 @@ export default function ProfessionalsPage() {
               </button>
               <button
                 onClick={submitCreate}
-                disabled={!formData.userId || !formData.specialty}
+                disabled={!formData.userId || !formData.specialtyId}
                 className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Criar
@@ -379,13 +392,13 @@ export default function ProfessionalsPage() {
                   Especialidade <span className="text-red-500">*</span>
                 </label>
                 <select
-                  value={formData.specialty}
-                  onChange={(e) => setFormData({ ...formData, specialty: e.target.value })}
+                  value={formData.specialtyId}
+                  onChange={(e) => setFormData({ ...formData, specialtyId: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   required
                 >
-                  {SPECIALTIES.map((specialty) => (
-                    <option key={specialty} value={specialty}>{specialty}</option>
+                  {(specialtiesData?.specialties || []).map((specialty: Specialty) => (
+                    <option key={specialty.id} value={specialty.id}>{specialty.name}</option>
                   ))}
                 </select>
               </div>

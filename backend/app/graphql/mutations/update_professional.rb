@@ -8,7 +8,7 @@ module Mutations
     field :errors, [String], null: false
 
     argument :id, ID, required: true
-    argument :specialty, String, required: false
+    argument :specialty_id, ID, required: false
     argument :council_registration, String, required: false
     argument :bio, String, required: false
     argument :active, Boolean, required: false

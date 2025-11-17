@@ -6,8 +6,9 @@ import { useAuth } from '@/src/context/AuthContext'
 
 interface NavItem {
   label: string
-  href: string
+  href?: string
   icon: string
+  subItems?: NavItem[]
 }
 
 const navItems: NavItem[] = [
@@ -15,14 +16,37 @@ const navItems: NavItem[] = [
   { label: 'Usuários', href: '/users', icon: '👤' },
   { label: 'Pacientes', href: '/patients', icon: '👥' },
   { label: 'Profissionais', href: '/professionals', icon: '👨‍⚕️' },
+  { 
+    label: 'Cadastros Gerais', 
+    icon: '📋',
+    subItems: [
+      { label: 'Especialidades', href: '/specialties', icon: '🎓' }
+    ]
+  },
   { label: 'Relatórios', href: '/reports', icon: '📈' },
   { label: 'Configurações', href: '/settings', icon: '⚙️' },
 ]
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(true)
+  const [expandedItems, setExpandedItems] = useState<string[]>(['Cadastros Gerais'])
   const pathname = usePathname()
   const { user, logout } = useAuth()
+
+  const toggleSubMenu = (label: string) => {
+    setExpandedItems(prev => 
+      prev.includes(label) 
+        ? prev.filter(item => item !== label)
+        : [...prev, label]
+    )
+  }
+
+  const isSubItemActive = (item: NavItem) => {
+    if (item.subItems) {
+      return item.subItems.some(sub => sub.href === pathname)
+    }
+    return false
+  }
 
   return (
     <>
@@ -59,24 +83,75 @@ export default function Sidebar() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 220px)' }}>
           {navItems.map((item) => {
             const isActive = pathname === item.href
+            const hasSubItems = item.subItems && item.subItems.length > 0
+            const isExpanded = expandedItems.includes(item.label)
+            const subItemActive = isSubItemActive(item)
+
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`
-                  flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
-                  ${isActive 
-                    ? 'bg-blue-600 text-white' 
-                    : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                  }
-                `}
-              >
-                <span className="text-xl">{item.icon}</span>
-                <span className="font-medium">{item.label}</span>
-              </Link>
+              <div key={item.label}>
+                {hasSubItems ? (
+                  <>
+                    <button
+                      onClick={() => toggleSubMenu(item.label)}
+                      className={`
+                        w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-colors
+                        ${subItemActive
+                          ? 'bg-blue-600 text-white' 
+                          : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                        }
+                      `}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">{item.icon}</span>
+                        <span className="font-medium">{item.label}</span>
+                      </div>
+                      <span className={`transition-transform ${isExpanded ? 'rotate-90' : ''}`}>
+                        ▶
+                      </span>
+                    </button>
+                    {isExpanded && (
+                      <div className="ml-4 mt-1 space-y-1">
+                        {item.subItems?.map((subItem) => {
+                          const isSubActive = pathname === subItem.href
+                          return (
+                            <Link
+                              key={subItem.href}
+                              href={subItem.href || '#'}
+                              className={`
+                                flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-sm
+                                ${isSubActive 
+                                  ? 'bg-blue-500 text-white' 
+                                  : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                                }
+                              `}
+                            >
+                              <span>{subItem.icon}</span>
+                              <span>{subItem.label}</span>
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <Link
+                    href={item.href || '#'}
+                    className={`
+                      flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
+                      ${isActive 
+                        ? 'bg-blue-600 text-white' 
+                        : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                      }
+                    `}
+                  >
+                    <span className="text-xl">{item.icon}</span>
+                    <span className="font-medium">{item.label}</span>
+                  </Link>
+                )}
+              </div>
             )
           })}
         </nav>

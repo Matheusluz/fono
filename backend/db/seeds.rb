@@ -30,39 +30,67 @@ end
 puts "   Credenciais: #{admin_email} / #{admin_password}"
 puts '   ⚠️  Lembre-se de alterar a senha padrão em produção!'
 
+# Criar especialidades
+puts "\n🎓 Criando especialidades..."
+
+specialties_data = [
+  { name: 'Fonoaudiologia', description: 'Especialidade focada em comunicação humana, linguagem, voz, audição e deglutição' },
+  { name: 'Psicologia', description: 'Especialidade focada em saúde mental, comportamento e processos mentais' },
+  { name: 'Psicopedagogia', description: 'Especialidade focada em processos de aprendizagem e dificuldades escolares' },
+  { name: 'Terapia Ocupacional', description: 'Especialidade focada em habilidades funcionais e independência nas atividades diárias' },
+  { name: 'Nutrição', description: 'Especialidade focada em alimentação, nutrição e saúde' },
+  { name: 'Fisioterapia', description: 'Especialidade focada em movimento, funcionalidade e reabilitação física' }
+]
+
+specialties_data.each do |spec_data|
+  specialty = Specialty.find_or_initialize_by(name: spec_data[:name])
+  
+  if specialty.new_record?
+    specialty.assign_attributes(
+      description: spec_data[:description],
+      active: true
+    )
+    specialty.save!
+    puts "✅ Especialidade criada: #{spec_data[:name]}"
+  else
+    specialty.update!(active: true) unless specialty.active?
+    puts "✅ Especialidade já existe: #{spec_data[:name]}"
+  end
+end
+
 # Criar profissionais de exemplo
+puts "\n📋 Criando profissionais de exemplo..."
+
 professionals_data = [
   {
     email: 'maria.silva@fono.com',
     password: 'senha123',
-    specialty: 'Fonoaudiologia',
+    specialty_name: 'Fonoaudiologia',
     council_registration: 'CRFa 2-12345',
     bio: 'Fonoaudióloga especializada em linguagem infantil e disfagia. 10 anos de experiência.'
   },
   {
     email: 'joao.santos@fono.com',
     password: 'senha123',
-    specialty: 'Psicologia',
+    specialty_name: 'Psicologia',
     council_registration: 'CRP 06/123456',
     bio: 'Psicólogo clínico com abordagem cognitivo-comportamental. Atendimento a adolescentes e adultos.'
   },
   {
     email: 'ana.costa@fono.com',
     password: 'senha123',
-    specialty: 'Fonoaudiologia',
+    specialty_name: 'Fonoaudiologia',
     council_registration: 'CRFa 2-54321',
     bio: 'Fonoaudióloga especializada em audiologia e reabilitação auditiva.'
   },
   {
     email: 'carlos.oliveira@fono.com',
     password: 'senha123',
-    specialty: 'Psicopedagogia',
+    specialty_name: 'Psicopedagogia',
     council_registration: nil,
     bio: 'Psicopedagogo com foco em dificuldades de aprendizagem e transtornos do neurodesenvolvimento.'
   }
 ]
-
-puts "\n📋 Criando profissionais de exemplo..."
 
 professionals_data.each do |prof_data|
   user = User.find_or_initialize_by(email: prof_data[:email])
@@ -81,20 +109,29 @@ professionals_data.each do |prof_data|
     puts "✅ Usuário profissional atualizado: #{prof_data[:email]}"
   end
   
+  # Buscar a especialidade pelo nome
+  specialty = Specialty.find_by(name: prof_data[:specialty_name])
+  
+  unless specialty
+    puts "   ⚠️  Especialidade '#{prof_data[:specialty_name]}' não encontrada, pulando..."
+    next
+  end
+  
   # Criar ou atualizar professional
   professional = user.professional || user.build_professional
   professional.assign_attributes(
-    specialty: prof_data[:specialty],
+    specialty: specialty,
     council_registration: prof_data[:council_registration],
     bio: prof_data[:bio],
     active: true
   )
   professional.save!
-  puts "   Especialidade: #{prof_data[:specialty]}"
+  puts "   Especialidade: #{specialty.name}"
 end
 
 puts "\n✨ Seeds concluídos!"
 puts "📊 Resumo:"
+puts "   Especialidades: #{Specialty.count}"
 puts "   Admin: #{User.admin.count}"
 puts "   Profissionais: #{User.professional.count}"
 puts "   Assistentes: #{User.assistant.count}"

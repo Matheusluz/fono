@@ -8,11 +8,11 @@ module Mutations
     field :errors, [String], null: false
 
     argument :user_id, ID, required: true
-    argument :specialty, String, required: true
+    argument :specialty_id, ID, required: true
     argument :council_registration, String, required: false
     argument :bio, String, required: false
 
-    def resolve(user_id:, specialty:, council_registration: nil, bio: nil)
+    def resolve(user_id:, specialty_id:, council_registration: nil, bio: nil)
       require_authentication!
       
       # Apenas admin pode criar profissionais
@@ -28,6 +28,14 @@ module Mutations
         return {
           professional: nil,
           errors: ['User not found']
+        }
+      end
+      
+      specialty = Specialty.find_by(id: specialty_id)
+      unless specialty
+        return {
+          professional: nil,
+          errors: ['Specialty not found']
         }
       end
       

@@ -14,9 +14,10 @@
 
 class Professional < ApplicationRecord
   belongs_to :user
+  belongs_to :specialty
   
   # Validações
-  validates :specialty, presence: true
+  validates :specialty_id, presence: { message: "deve ser selecionada" }
   validates :user_id, uniqueness: true
   validates :council_registration, uniqueness: { allow_blank: true }
   

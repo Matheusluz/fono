@@ -64,6 +64,27 @@ module Types
       User.all
     end
     
+    # Todas especialidades
+    field :specialties, [Types::SpecialtyType], null: false do
+      argument :include_inactive, Boolean, required: false, default_value: false
+    end
+    
+    def specialties(include_inactive: false)
+      require_authentication!
+      scope = include_inactive ? Specialty.all : Specialty.active
+      scope.ordered
+    end
+    
+    # Buscar especialidade por ID
+    field :specialty, Types::SpecialtyType, null: true do
+      argument :id, ID, required: true
+    end
+    
+    def specialty(id:)
+      require_authentication!
+      Specialty.find_by(id: id)
+    end
+    
     # Todos profissionais ativos
     field :professionals, [Types::ProfessionalType], null: false do
       argument :include_inactive, Boolean, required: false, default_value: false
@@ -86,12 +107,12 @@ module Types
     
     # Buscar profissionais por especialidade
     field :professionals_by_specialty, [Types::ProfessionalType], null: false do
-      argument :specialty, String, required: true
+      argument :specialty_id, ID, required: true
     end
     
-    def professionals_by_specialty(specialty:)
+    def professionals_by_specialty(specialty_id:)
       require_authentication!
-      Professional.active.by_specialty(specialty)
+      Professional.active.where(specialty_id: specialty_id)
     end
   end
 end

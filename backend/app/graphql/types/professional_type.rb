@@ -5,7 +5,9 @@ module Types
     field :id, ID, null: false
     field :user_id, Integer, null: false
     field :user, Types::UserType, null: false
-    field :specialty, String, null: false
+    field :specialty_id, Integer, null: false
+    field :specialty, Types::SpecialtyType, null: false
+    field :specialty_name, String, null: false
     field :council_registration, String, null: true
     field :bio, String, null: true
     field :active, Boolean, null: false
@@ -22,6 +24,11 @@ module Types
     field :full_name, String, null: false
     def full_name
       object.full_name
+    end
+    
+    # Campo calculado para nome da especialidade
+    def specialty_name
+      object.specialty.name
     end
   end
 end
