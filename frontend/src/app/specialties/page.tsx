@@ -10,6 +10,7 @@ import {
   DELETE_SPECIALTY_MUTATION 
 } from '@/src/lib/graphql'
 import { useAuth } from '@/src/context/AuthContext'
+import DashboardLayout from '@/src/components/DashboardLayout'
 import ProtectedRoute from '@/src/components/ProtectedRoute'
 import Modal from '@/src/components/Modal'
 import Table from '@/src/components/Table'
@@ -169,150 +170,152 @@ export default function SpecialtiesPage() {
 
   return (
     <ProtectedRoute>
-      <div className="space-y-6">
-        <PageHeader
-          title="Especialidades"
-          subtitle="Gerencie as especialidades dos profissionais"
-          actionLabel="Nova Especialidade"
-          onAction={() => handleOpenModal()}
-        />
+      <DashboardLayout>
+        <div className="space-y-6">
+          <PageHeader
+            title="Especialidades"
+            subtitle="Gerencie as especialidades dos profissionais"
+            actionLabel="Nova Especialidade"
+            onAction={() => handleOpenModal()}
+          />
 
-        <Table
-          columns={[
-            { key: 'name', label: 'Nome' },
-            { key: 'description', label: 'Descrição' },
-            { key: 'professionals', label: 'Profissionais' },
-            { key: 'status', label: 'Status' },
-            { key: 'actions', label: 'Ações' }
-          ]}
-          data={paginatedData}
-          loading={loading}
-          error={error?.message}
-          emptyMessage="Nenhuma especialidade cadastrada"
-          showFilter={true}
-          filterValue={filterValue}
-          onFilterChange={setFilterValue}
-          filterPlaceholder="Buscar por nome, descrição ou ID..."
-          showPagination={true}
-          currentPage={currentPage}
-          totalItems={filteredData.length}
-          itemsPerPage={itemsPerPage}
-          onPageChange={setCurrentPage}
-          onItemsPerPageChange={(value: number) => {
-            setItemsPerPage(value)
-            setCurrentPage(1)
-          }}
-          renderRow={(specialty: Specialty) => (
-            <tr key={specialty.id} className="hover:bg-gray-50">
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                {specialty.name}
-              </td>
-              <td className="px-6 py-4 text-sm text-gray-500">
-                {specialty.description || '-'}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  {specialty.professionalsCount}
-                </span>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <StatusBadge 
-                  label={specialty.active ? 'Ativo' : 'Inativo'}
-                  variant={specialty.active ? 'success' : 'neutral'}
+          <Table
+            columns={[
+              { key: 'name', label: 'Nome' },
+              { key: 'description', label: 'Descrição' },
+              { key: 'professionals', label: 'Profissionais' },
+              { key: 'status', label: 'Status' },
+              { key: 'actions', label: 'Ações' }
+            ]}
+            data={paginatedData}
+            loading={loading}
+            error={error?.message}
+            emptyMessage="Nenhuma especialidade cadastrada"
+            showFilter={true}
+            filterValue={filterValue}
+            onFilterChange={setFilterValue}
+            filterPlaceholder="Buscar por nome, descrição ou ID..."
+            showPagination={true}
+            currentPage={currentPage}
+            totalItems={filteredData.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onItemsPerPageChange={(value: number) => {
+              setItemsPerPage(value)
+              setCurrentPage(1)
+            }}
+            renderRow={(specialty: Specialty) => (
+              <tr key={specialty.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {specialty.name}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-500">
+                  {specialty.description || '-'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    {specialty.professionalsCount}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <StatusBadge 
+                    label={specialty.active ? 'Ativo' : 'Inativo'}
+                    variant={specialty.active ? 'success' : 'neutral'}
+                  />
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                  <button
+                    onClick={() => handleOpenModal(specialty)}
+                    className="text-indigo-600 hover:text-indigo-900"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => handleToggleActive(specialty)}
+                    className="text-blue-600 hover:text-blue-900"
+                  >
+                    {specialty.active ? 'Desativar' : 'Ativar'}
+                  </button>
+                  <button
+                    onClick={() => handleDeleteClick(specialty)}
+                    className="text-red-600 hover:text-red-900"
+                    disabled={specialty.professionalsCount > 0}
+                    title={specialty.professionalsCount > 0 ? 'Não é possível excluir especialidade com profissionais vinculados' : 'Desativar especialidade'}
+                  >
+                    Excluir
+                  </button>
+                </td>
+              </tr>
+            )}
+          />
+
+          <Modal
+            isOpen={isModalOpen}
+            onClose={handleCloseModal}
+            title={selectedSpecialty ? 'Editar Especialidade' : 'Nova Especialidade'}
+          >
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                  Nome *
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
+                  placeholder="Ex: Fonoaudiologia Clínica"
                 />
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+              </div>
+
+              <div>
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                  Descrição
+                </label>
+                <textarea
+                  id="description"
+                  rows={3}
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
+                  placeholder="Breve descrição da especialidade..."
+                />
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-4">
                 <button
-                  onClick={() => handleOpenModal(specialty)}
-                  className="text-indigo-600 hover:text-indigo-900"
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                 >
-                  Editar
+                  Cancelar
                 </button>
                 <button
-                  onClick={() => handleToggleActive(specialty)}
-                  className="text-blue-600 hover:text-blue-900"
+                  type="submit"
+                  className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700"
                 >
-                  {specialty.active ? 'Desativar' : 'Ativar'}
+                  {selectedSpecialty ? 'Salvar' : 'Criar'}
                 </button>
-                <button
-                  onClick={() => handleDeleteClick(specialty)}
-                  className="text-red-600 hover:text-red-900"
-                  disabled={specialty.professionalsCount > 0}
-                  title={specialty.professionalsCount > 0 ? 'Não é possível excluir especialidade com profissionais vinculados' : 'Desativar especialidade'}
-                >
-                  Excluir
-                </button>
-              </td>
-            </tr>
-          )}
-        />
+              </div>
+            </form>
+          </Modal>
 
-        <Modal
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          title={selectedSpecialty ? 'Editar Especialidade' : 'Nova Especialidade'}
-        >
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Nome *
-              </label>
-              <input
-                id="name"
-                type="text"
-                required
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
-                placeholder="Ex: Fonoaudiologia Clínica"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                Descrição
-              </label>
-              <textarea
-                id="description"
-                rows={3}
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
-                placeholder="Breve descrição da especialidade..."
-              />
-            </div>
-
-            <div className="flex justify-end space-x-3 pt-4">
-              <button
-                type="button"
-                onClick={handleCloseModal}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700"
-              >
-                {selectedSpecialty ? 'Salvar' : 'Criar'}
-              </button>
-            </div>
-          </form>
-        </Modal>
-
-        <ConfirmDialog
-          isOpen={isDeleteModalOpen}
-          onClose={() => {
-            setIsDeleteModalOpen(false)
-            setSelectedSpecialty(null)
-          }}
-          onConfirm={handleDeleteConfirm}
-          title="Desativar Especialidade"
-          message={`Tem certeza que deseja desativar a especialidade "${selectedSpecialty?.name}"?`}
-          confirmLabel="Desativar"
-          cancelLabel="Cancelar"
-        />
-      </div>
+          <ConfirmDialog
+            isOpen={isDeleteModalOpen}
+            onClose={() => {
+              setIsDeleteModalOpen(false)
+              setSelectedSpecialty(null)
+            }}
+            onConfirm={handleDeleteConfirm}
+            title="Desativar Especialidade"
+            message={`Tem certeza que deseja desativar a especialidade "${selectedSpecialty?.name}"?`}
+            confirmLabel="Desativar"
+            cancelLabel="Cancelar"
+          />
+        </div>
+      </DashboardLayout>
     </ProtectedRoute>
   )
 }
