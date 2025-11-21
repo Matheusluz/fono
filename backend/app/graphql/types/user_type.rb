@@ -4,6 +4,7 @@ module Types
     field :email, String, null: false
     field :admin, Boolean, null: false
     field :role, String, null: false
+    field :theme_preference, String, null: false
     field :professional, Types::ProfessionalType, null: true
     
     def role

@@ -58,24 +58,24 @@ export default function Pagination({
   if (totalPages === 0) return null
 
   return (
-    <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+    <div className="bg-gray-50 dark:bg-gray-700 px-6 py-4 border-t border-gray-200 dark:border-gray-600">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="text-sm text-gray-700">
-            Mostrando <span className="font-semibold">{startItem}</span> a{' '}
-            <span className="font-semibold">{endItem}</span> de{' '}
-            <span className="font-semibold">{totalItems}</span> resultados
+          <div className="text-sm text-gray-700 dark:text-gray-300">
+            Mostrando <span className="font-semibold text-gray-900 dark:text-gray-100">{startItem}</span> a{' '}
+            <span className="font-semibold text-gray-900 dark:text-gray-100">{endItem}</span> de{' '}
+            <span className="font-semibold text-gray-900 dark:text-gray-100">{totalItems}</span> resultados
           </div>
           
           <div className="flex items-center gap-2">
-            <label htmlFor="itemsPerPage" className="text-sm text-gray-700">
+            <label htmlFor="itemsPerPage" className="text-sm text-gray-700 dark:text-gray-300">
               Itens por página:
             </label>
             <select
               id="itemsPerPage"
               value={itemsPerPage}
               onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
-              className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors"
             >
               <option value={5}>5</option>
               <option value={10}>10</option>
@@ -89,7 +89,7 @@ export default function Pagination({
           <button
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Anterior
           </button>
@@ -99,12 +99,12 @@ export default function Pagination({
               key={index}
               onClick={() => typeof page === 'number' && onPageChange(page)}
               disabled={page === '...'}
-              className={`px-3 py-1 border rounded-md text-sm font-medium ${
+              className={`px-3 py-1 border rounded-md text-sm font-medium transition-colors ${
                 page === currentPage
-                  ? 'bg-blue-600 text-white border-blue-600'
+                  ? 'bg-blue-600 dark:bg-blue-500 text-white border-blue-600 dark:border-blue-500'
                   : page === '...'
-                  ? 'border-transparent text-gray-700 cursor-default'
-                  : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+                  ? 'border-transparent text-gray-700 dark:text-gray-300 cursor-default bg-transparent'
+                  : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
             >
               {page}
@@ -114,7 +114,7 @@ export default function Pagination({
           <button
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Próxima
           </button>

@@ -9,11 +9,11 @@ interface AvatarProps {
 }
 
 const variantStyles: Record<AvatarVariant, string> = {
-  blue: 'bg-blue-100 text-blue-600',
-  green: 'bg-green-100 text-green-600',
-  purple: 'bg-purple-100 text-purple-600',
-  red: 'bg-red-100 text-red-600',
-  yellow: 'bg-yellow-100 text-yellow-600'
+  blue: 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300',
+  green: 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300',
+  purple: 'bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300',
+  red: 'bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300',
+  yellow: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300'
 }
 
 const sizeStyles = {

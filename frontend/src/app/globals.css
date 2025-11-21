@@ -3,3 +3,56 @@
 @tailwind utilities;
 
 /* estilos customizados aqui */
+
+/* Transições suaves entre temas */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Prevenção de flash de tema incorreto */
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* Scrollbar personalizada para tema escuro */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 dark:bg-gray-800 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+  border: 1px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400 dark:bg-gray-500;
+}
+
+/* Melhor aparência para inputs em dark mode */
+.dark input[type="text"],
+.dark input[type="email"], 
+.dark input[type="password"],
+.dark textarea,
+.dark select {
+  @apply ring-offset-gray-800;
+}
+
+/* Animações suaves para hover states */
+button, a, .hover-effect {
+  transition: all 0.2s ease;
+}
+
+/* Melhorar contraste de foco para acessibilidade */
+.dark *:focus {
+  outline-color: #60a5fa;
+}

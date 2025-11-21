@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { useAuth } from '@/src/context/AuthContext'
+import { useTheme } from '@/src/context/ThemeContext'
 
 interface NavItem {
   label: string
@@ -32,6 +33,7 @@ export default function Sidebar() {
   const [expandedItems, setExpandedItems] = useState<string[]>(['Cadastros Gerais'])
   const pathname = usePathname()
   const { user, logout } = useAuth()
+  const { theme, toggleTheme } = useTheme()
 
   const toggleSubMenu = (label: string) => {
     setExpandedItems(prev => 
@@ -61,7 +63,7 @@ export default function Sidebar() {
       {/* Sidebar */}
       <aside
         className={`
-          fixed top-0 left-0 h-screen bg-gray-900 text-white transition-transform duration-300 z-40
+          fixed top-0 left-0 h-screen bg-gray-900 dark:bg-gray-950 text-white transition-transform duration-300 z-40
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:translate-x-0 w-64
         `}
@@ -156,8 +158,15 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {/* Footer / Logout */}
-        <div className="p-4 border-t border-gray-700">
+        {/* Footer / Theme Toggle & Logout */}
+        <div className="p-4 border-t border-gray-700 space-y-2">
+          <button
+            onClick={toggleTheme}
+            className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors"
+          >
+            <span className="text-xl">{theme === 'dark' ? '☀️' : '🌙'}</span>
+            <span className="font-medium">{theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}</span>
+          </button>
           <button
             onClick={logout}
             className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-red-600 hover:text-white rounded-lg transition-colors"

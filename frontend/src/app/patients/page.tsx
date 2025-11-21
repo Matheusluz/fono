@@ -255,8 +255,8 @@ export default function PatientsPage() {
         onPageChange={setCurrentPage}
         onItemsPerPageChange={handleItemsPerPageChange}
         renderRow={(patient: Patient) => (
-          <tr key={patient.id} className="hover:bg-gray-50">
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">#{patient.id}</td>
+          <tr key={patient.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">#{patient.id}</td>
             <td className="px-6 py-4 whitespace-nowrap">
               <div className="flex items-center">
                 <Avatar
@@ -264,35 +264,35 @@ export default function PatientsPage() {
                   variant="green"
                 />
                 <div className="ml-4">
-                  <div className="text-sm font-medium text-gray-900">
+                  <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                     {patient.firstName} {patient.lastName}
                   </div>
                 </div>
               </div>
             </td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
               {formatDate(patient.birthdate)}
             </td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
               {calculateAge(patient.birthdate)}
             </td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
               {patient.email || '-'}
             </td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
               {patient.phone || '-'}
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
               <button
                 onClick={() => openEditModal(patient)}
-                className="text-blue-600 hover:text-blue-900 mr-4"
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-4 transition-colors"
                 title="Editar"
               >
                 ✏️
               </button>
               <button
                 onClick={() => openDeleteModal(patient)}
-                className="text-red-600 hover:text-red-900"
+                className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors"
                 title="Deletar"
               >
                 🗑️

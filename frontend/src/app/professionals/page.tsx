@@ -247,21 +247,21 @@ export default function ProfessionalsPage() {
         onPageChange={setCurrentPage}
         onItemsPerPageChange={handleItemsPerPageChange}
         renderRow={(professional: Professional) => (
-          <tr key={professional.id} className="hover:bg-gray-50">
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">#{professional.id}</td>
+          <tr key={professional.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">#{professional.id}</td>
             <td className="px-6 py-4 whitespace-nowrap">
               <div className="flex items-center">
                 <Avatar initials={professional.email.substring(0,2)} variant="purple" />
                 <div className="ml-4">
-                  <div className="text-sm font-medium text-gray-900">{professional.fullName}</div>
-                  <div className="text-sm text-gray-500">{professional.email}</div>
+                  <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{professional.fullName}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">{professional.email}</div>
                 </div>
               </div>
             </td>
             <td className="px-6 py-4 whitespace-nowrap">
               <StatusBadge label={professional.specialtyName} variant="purple" />
             </td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
               {professional.councilRegistration || '-'}
             </td>
             <td className="px-6 py-4 whitespace-nowrap">
@@ -270,13 +270,13 @@ export default function ProfessionalsPage() {
             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
               <button
                 onClick={() => handleEdit(professional)}
-                className="text-indigo-600 hover:text-indigo-900 mr-4"
+                className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-4 transition-colors"
               >
                 Editar
               </button>
               <button
                 onClick={() => handleDelete(professional)}
-                className="text-red-600 hover:text-red-900"
+                className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors"
               >
                 Desativar
               </button>

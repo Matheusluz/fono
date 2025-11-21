@@ -9,6 +9,7 @@ module Mutations
     argument :password, String, required: false
     argument :password_confirmation, String, required: false
     argument :admin, Boolean, required: false
+    argument :theme_preference, String, required: false
 
     field :user, Types::UserType, null: true
     field :errors, [String], null: false

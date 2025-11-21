@@ -9,6 +9,7 @@ interface User {
   email: string
   admin: boolean
   role: 'admin' | 'professional' | 'assistant'
+  themePreference: 'light' | 'dark'
 }
 
 interface AuthContextValue {
@@ -17,6 +18,7 @@ interface AuthContextValue {
   loading: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => void
+  updateThemePreference: (theme: 'light' | 'dark') => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -25,7 +27,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 const LOGIN_USER_MUTATION = gql`
   mutation LoginUser($email: String!, $password: String!) {
     loginUser(email: $email, password: $password) {
-      user { id email admin role }
+      user { id email admin role themePreference }
       token
       errors
     }
@@ -34,7 +36,22 @@ const LOGIN_USER_MUTATION = gql`
 
 const CURRENT_USER_QUERY = gql`
   query CurrentUser {
-    currentUser { id email admin role }
+    currentUser { id email admin role themePreference }
+  }
+`
+
+const UPDATE_THEME_PREFERENCE_MUTATION = gql`
+  mutation UpdateThemePreference($themePreference: String!) {
+    updateThemePreference(themePreference: $themePreference) {
+      user {
+        id
+        email
+        admin
+        role
+        themePreference
+      }
+      errors
+    }
   }
 `
 
@@ -113,6 +130,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [apollo, router])
 
+  const updateThemePreference = useCallback(async (theme: 'light' | 'dark') => {
+    if (!user) return
+    
+    try {
+      const result = await apollo.mutate({
+        mutation: UPDATE_THEME_PREFERENCE_MUTATION,
+        variables: { themePreference: theme }
+      })
+      
+      const payload = result.data?.updateThemePreference
+      if (payload?.user && payload.errors.length === 0) {
+        setUser(payload.user)
+      } else {
+        throw new Error(payload?.errors?.join(', ') || 'Erro ao atualizar tema')
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar tema:', error)
+      throw error
+    }
+  }, [apollo, user])
+
   const logout = useCallback(() => {
     localStorage.removeItem('token')
     // Remove cookie
@@ -122,7 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.replace('/login')
   }, [router])
 
-  const value: AuthContextValue = { user, token, loading, login, logout }
+  const value: AuthContextValue = { user, token, loading, login, logout, updateThemePreference }
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 

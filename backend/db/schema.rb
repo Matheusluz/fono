@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_11_16_000001) do
+ActiveRecord::Schema[7.1].define(version: 2025_11_21_143205) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -69,10 +69,12 @@ ActiveRecord::Schema[7.1].define(version: 2025_11_16_000001) do
     t.datetime "updated_at", null: false
     t.boolean "admin", default: false, null: false
     t.integer "role", default: 0, null: false
+    t.string "theme_preference", default: "light", null: false
     t.index ["admin"], name: "index_users_on_admin"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["role"], name: "index_users_on_role"
+    t.index ["theme_preference"], name: "index_users_on_theme_preference"
   end
 
   add_foreign_key "professionals", "specialties"

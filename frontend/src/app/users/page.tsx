@@ -237,15 +237,15 @@ export default function UsersPage() {
         onPageChange={setCurrentPage}
         onItemsPerPageChange={handleItemsPerPageChange}
         renderRow={(user: User) => (
-          <tr key={user.id} className="hover:bg-gray-50">
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+          <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
               #{user.id}
             </td>
             <td className="px-6 py-4 whitespace-nowrap">
               <div className="flex items-center">
                 <Avatar initials={user.email.charAt(0)} variant="blue" />
                 <div className="ml-4">
-                  <div className="text-sm font-medium text-gray-900">{user.email}</div>
+                  <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.email}</div>
                 </div>
               </div>
             </td>
@@ -261,14 +261,14 @@ export default function UsersPage() {
             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
               <button
                 onClick={() => openEditModal(user)}
-                className="text-blue-600 hover:text-blue-900 mr-4"
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-4 transition-colors"
                 title="Editar"
               >
                 ✏️
               </button>
               <button
                 onClick={() => openDeleteModal(user)}
-                className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 title="Deletar"
                 disabled={user.id === currentUser?.id}
               >

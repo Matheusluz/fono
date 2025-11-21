@@ -21,6 +21,9 @@ class User < ApplicationRecord
     assistant: 2
   }
 
+  # Validação de theme_preference
+  validates :theme_preference, inclusion: { in: %w[light dark], message: "deve ser 'light' ou 'dark'" }
+
   # Para permitir que apenas email e password sejam passados na criação
   attr_accessor :skip_password_validation
 
